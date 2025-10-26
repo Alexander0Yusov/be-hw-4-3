@@ -15,6 +15,7 @@ export function appSetup(app: INestApplication) {
 
   //... etc
 
+  // порядок регистрации оч важен
   app.useGlobalFilters(
     new AllHttpExceptionsFilter(),
     new DomainHttpExceptionsFilter(),

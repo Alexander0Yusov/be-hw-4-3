@@ -46,6 +46,8 @@ export class AuthController {
   async login(
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<{ accessToken: string }> {
+    console.log(8888, user.id);
+
     return await this.authService.login(user.id);
   }
 

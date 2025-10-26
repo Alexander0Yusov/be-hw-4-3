@@ -7,6 +7,7 @@ import { TestingModule } from './modules/testing/testing.module';
 import { UserAccountsModule } from './modules/user-accounts/user-accounts.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { MailerModule } from './modules/mailer/mailer.module';
+import { CoreModule } from './core/core.module';
 
 // nest g module modules/user-accounts
 // nest g controller modules/user-accounts --no-spec
@@ -22,6 +23,7 @@ import { MailerModule } from './modules/mailer/mailer.module';
     UserAccountsModule,
     NotificationsModule,
     MailerModule,
+    CoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],

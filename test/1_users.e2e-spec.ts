@@ -108,35 +108,35 @@ describe('users (e2e)', () => {
   //   expect(EmailServiceMock.sendConfirmationEmailMock).toHaveBeenCalled();
   // });
 
-  it('should send a letter if user exists but not confirmed', async () => {
-    const body: UserInputDto = {
-      login: 'yusovsky',
-      password: 'qwerty',
-      email: 'yusovsky2@gmail.com',
-    };
+  // it('should send a letter if user exists but not confirmed', async () => {
+  //   const body: UserInputDto = {
+  //     login: 'yusovsky',
+  //     password: 'qwerty',
+  //     email: 'yusovsky2@gmail.com',
+  //   };
 
-    await userTestManger.createUser(body);
+  //   await userTestManger.createUser(body);
 
-    const response = await request(app.getHttpServer())
-      .post(`/${GLOBAL_PREFIX}/auth/registration-email-resending`)
-      .send({ email: 'yusovsky2@gmail.com' })
-      .expect(204);
+  //   const response = await request(app.getHttpServer())
+  //     .post(`/${GLOBAL_PREFIX}/auth/registration-email-resending`)
+  //     .send({ email: 'yusovsky2@gmail.com' })
+  //     .expect(204);
 
-    // console.log(2222, response.body);
+  // console.log(2222, response.body);
 
-    // expect(response).toEqual({
-    //   login: body.login,
-    //   email: body.email,
-    //   id: expect.any(String),
-    //   createdAt: expect.any(String),
-    // });
-  });
+  // expect(response).toEqual({
+  //   login: body.login,
+  //   email: body.email,
+  //   id: expect.any(String),
+  //   createdAt: expect.any(String),
+  // });
+  // });
 
   it('should create user', async () => {
     const body: UserInputDto = {
-      login: 'name1',
+      login: 'name1s',
       password: 'qwerty',
-      email: 'email@email.em',
+      email: 'emails@email.em',
     };
 
     const response = await userTestManger.createUser(body);

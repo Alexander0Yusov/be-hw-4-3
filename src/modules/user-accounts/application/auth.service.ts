@@ -22,7 +22,7 @@ export class AuthService {
     login: string,
     password: string,
   ): Promise<UserContextDto | null> {
-    const user = await this.usersRepository.findByLogin(login);
+    const user = await this.usersRepository.findByEmailOrLogin(login);
     if (!user) {
       return null;
     }
