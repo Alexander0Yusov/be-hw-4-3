@@ -56,7 +56,7 @@ describe('comments (e2e)', () => {
       .auth('admin', 'qwerty')
       .expect(201);
 
-    //
+    // создание и логин юзера
     const newUser = createFakeUser('1');
 
     const createdUser = await request(app.getHttpServer())
@@ -71,10 +71,10 @@ describe('comments (e2e)', () => {
       .expect(HttpStatus.OK);
 
     // создание комментария
-    // const createdComment = await request(app.getHttpServer())
-    //   .post(`/${GLOBAL_PREFIX}` + `/posts/${createdPost.body.id}` + '/comments')
-    //   .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
-    //   .send({ content: 'a'.repeat(25) })
-    //   .expect(HttpStatus.CREATED);
+    const createdComment = await request(app.getHttpServer())
+      .post(`/${GLOBAL_PREFIX}` + `/posts/${createdPost.body.id}` + '/comments')
+      .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+      .send({ content: 'a'.repeat(25) })
+      .expect(HttpStatus.CREATED);
   });
 });

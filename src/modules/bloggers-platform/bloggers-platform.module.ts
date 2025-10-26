@@ -16,6 +16,21 @@ import { CommentsService } from './application/comments.service';
 import { CommentsController } from './api/comments.controller';
 import { Comment, CommentSchema } from './domain/comment/comment.entity';
 import { CommentsQueryRepository } from './infrastructure/query/comments-query.repository';
+import { CreateCommentUseCase } from './application/usecases/comments/create-comment.usecase';
+import { UserAccountsModule } from '../user-accounts/user-accounts.module';
+import { UpdateCommentUseCase } from './application/usecases/comments/update-comment.usecase';
+import { UpdateCommentLikeStatusUseCase } from './application/usecases/comments/update-comment-like-status.usecase';
+import { GetCommentUseCase } from './application/usecases/comments/get-comment.usecase';
+import { DeleteCommentUseCase } from './application/usecases/comments/delete-comment.usecase';
+import { LikesRepository } from './infrastructure/likes.repository';
+
+export const CommandHandlers = [
+  CreateCommentUseCase,
+  UpdateCommentUseCase,
+  UpdateCommentLikeStatusUseCase,
+  GetCommentUseCase,
+  DeleteCommentUseCase,
+];
 
 @Module({
   imports: [
@@ -25,6 +40,7 @@ import { CommentsQueryRepository } from './infrastructure/query/comments-query.r
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
     ]),
+    UserAccountsModule,
   ],
   controllers: [BlogsController, PostsController, CommentsController],
   providers: [
@@ -39,6 +55,10 @@ import { CommentsQueryRepository } from './infrastructure/query/comments-query.r
     CommentsQueryRepository,
     CommentsRepository,
     CommentsService,
+    //
+    LikesRepository,
+
+    ...CommandHandlers,
   ],
   exports: [],
 })

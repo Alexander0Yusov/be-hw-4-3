@@ -26,6 +26,7 @@ import { ExtractUserFromRequest } from 'src/modules/user-accounts/guards/decorat
 import { UserContextDto } from 'src/modules/user-accounts/guards/dto/user-context.dto';
 import { JwtAuthGuard } from 'src/modules/user-accounts/guards/bearer/jwt-auth.guard';
 import { CommentsQueryRepository } from '../infrastructure/query/comments-query.repository';
+import { LikeInputDto } from '../dto/like/like-input.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -84,5 +85,18 @@ export class PostsController {
     );
 
     return this.commentsQueryRepository.findByIdOrNotFoundFail(commentId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/like-status')
+  async updateLikeStatusForCurrentPost(
+    @Param('id') id: string,
+    @Body() body: LikeInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    // const commentId = await this.commandBus.execute(
+    //   new CreateCommentCommand(body, id, user.id),
+    // );
+    // return this.commentsQueryRepository.findByIdOrNotFoundFail(commentId);
   }
 }

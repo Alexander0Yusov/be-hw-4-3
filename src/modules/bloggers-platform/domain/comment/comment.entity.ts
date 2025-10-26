@@ -38,6 +38,15 @@ export class Comment {
     return comment as CommentDocument;
   }
 
+  updateContent(newContent: string) {
+    this.content = newContent;
+  }
+
+  updateLikesCounters(likes: number, dislikes: number) {
+    this.likeCount = likes;
+    this.dislikeCount = dislikes;
+  }
+
   //   static mapToView(like: Like) {
   //     return {
   //       addedAt: like.createdAt.toISOString(),

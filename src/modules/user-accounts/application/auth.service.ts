@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UserContextDto } from '../guards/dto/user-context.dto';
 import { UsersRepository } from '../infrastructure/users.repository';
 import { CryptoService } from './crupto.service';
@@ -8,6 +8,10 @@ import { addDays } from 'date-fns';
 import { EmailService } from '../../../modules/mailer/email.service';
 import { DomainException } from '../../../core/exceptions/domain-exceptions';
 import { DomainExceptionCode } from '../../../core/exceptions/domain-exception-codes';
+import {
+  ACCESS_TOKEN_STRATEGY_INJECT_TOKEN,
+  REFRESH_TOKEN_STRATEGY_INJECT_TOKEN,
+} from '../constants/auth-tokens.inject-constants';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +20,12 @@ export class AuthService {
     private jwtService: JwtService,
     private cryptoService: CryptoService,
     private emailService: EmailService,
+
+    @Inject(ACCESS_TOKEN_STRATEGY_INJECT_TOKEN)
+    private accessTokenContext: JwtService,
+
+    @Inject(REFRESH_TOKEN_STRATEGY_INJECT_TOKEN)
+    private refreshTokenContext: JwtService,
   ) {}
 
   async validateUser(
@@ -40,12 +50,22 @@ export class AuthService {
   }
 
   async login(userId: string) {
-    const accessToken = this.jwtService.sign({ id: userId } as UserContextDto, {
-      expiresIn: '5m',
+    // const accessToken = this.jwtService.sign({ id: userId } as UserContextDto, {
+    //   expiresIn: '5m',
+    // });
+
+    const accessToken = this.accessTokenContext.sign({
+      id: userId,
+    });
+
+    const refreshToken = this.refreshTokenContext.sign({
+      id: userId,
+      deviceId: 'deviceId',
     });
 
     return {
       accessToken,
+      refreshToken,
     };
   }
 

@@ -1,26 +1,75 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { CommentInputDto } from '../dto/comment/comment-input.dto';
 import { CommentViewDto } from '../dto/comment/comment-view.dto';
 import { CommentsService } from '../application/comments.service';
+import { CommentUpdateDto } from '../dto/comment/comment-update.dto';
+import { CommandBus } from '@nestjs/cqrs';
+import { UpdateCommentCommand } from '../application/usecases/comments/update-comment.usecase';
+import { JwtAuthGuard } from 'src/modules/user-accounts/guards/bearer/jwt-auth.guard';
+import { UserContextDto } from 'src/modules/user-accounts/guards/dto/user-context.dto';
+import { ExtractUserFromRequest } from 'src/modules/user-accounts/guards/decorators/param/extract-user-from-request.decorator';
+import { LikeInputDto } from '../dto/like/like-input.dto';
+import { UpdateCommentLikeStatusCommand } from '../application/usecases/comments/update-comment-like-status.usecase';
+import { DeleteCommentCommand } from '../application/usecases/comments/delete-comment.usecase';
+import { JwtOptionalAuthGuard } from 'src/modules/user-accounts/guards/bearer/jwt-optional-auth.guard';
 
 @Controller('comments')
 export class CommentsController {
-  constructor(
-    private commentsService: CommentsService,
-    // private postsQueryRepository: PostsQueryRepository,
-  ) {}
+  constructor(private commandBus: CommandBus) {}
 
-  //   @Post()
-  //   async create(@Body() dto: CommentInputDto): Promise<CommentViewDto> {
-  //     const postId = await this.commentsService.createPost(dto);
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateComment(
+    @Param('id') id: string,
+    @Body() body: CommentUpdateDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    await this.commandBus.execute(new UpdateCommentCommand(body, id, user.id));
+  }
 
-  //     return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
-  //   }
+  @Put(':id/like-status')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updateCommentLikeStatus(
+    @Param('id') id: string,
+    @Body() like: LikeInputDto,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new UpdateCommentLikeStatusCommand(like, id, user.id),
+    );
+  }
 
-  // @Get(':id')
-  // async getById(@Param('id') id: string): Promise<PostViewDto> {
-  //    return this.postsQueryRepository.findByIdOrNotFoundFail(id);
-  // }
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteComment(
+    @Param('id') id: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    await this.commandBus.execute(new DeleteCommentCommand(id, user.id));
+  }
+
+  @Get(':id')
+  @UseGuards(JwtOptionalAuthGuard)
+  async getComment(
+    @Param('id') id: string,
+    @ExtractUserFromRequest() user: UserContextDto,
+  ): Promise<void> {
+    await this.commandBus.execute(new DeleteCommentCommand(id, user.id));
+  }
 }
 
 // создать шину, зарегать, создать команду, обработчик

@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
-// imports error
 import { Comment } from 'src/modules/bloggers-platform/domain/comment/comment.entity';
 import type { CommentModelType } from 'src/modules/bloggers-platform/domain/comment/comment.entity';
 import { CommentInputDto } from 'src/modules/bloggers-platform/dto/comment/comment-input.dto';

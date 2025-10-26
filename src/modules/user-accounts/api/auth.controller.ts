@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { UserInputDto } from '../dto/user/user-input.dto';
@@ -23,6 +24,7 @@ import { UpdateUserDto } from '../dto/user/create-user-domain.dto';
 import { PasswordRecoveryDto } from '../dto/user/password-recovery.dto';
 import { ConfirmationCodeDto } from '../dto/user/confirmation-code.dto';
 import { RateLimitGuard } from '../guards/limit/rate-limit.guard';
+import type { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -35,8 +37,6 @@ export class AuthController {
   @Post('registration')
   @HttpCode(HttpStatus.NO_CONTENT)
   async registration(@Body() body: UserInputDto): Promise<void> {
-    console.log(8888, body);
-
     return await this.usersService.registerUser(body);
   }
 
@@ -45,10 +45,16 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   async login(
     @ExtractUserFromRequest() user: UserContextDto,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string }> {
-    console.log(8888, user.id);
+    const { accessToken, refreshToken } = await this.authService.login(user.id);
 
-    return await this.authService.login(user.id);
+    response.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true, // true в проде, false в dev при http (+/-)
+    });
+
+    return { accessToken };
   }
 
   @ApiBearerAuth()
