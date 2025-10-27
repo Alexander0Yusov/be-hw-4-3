@@ -42,8 +42,8 @@ export class CreateCommentUseCase
       postId: new Types.ObjectId(postId),
       userId: new Types.ObjectId(userId),
       userLogin: user.login,
-      likeCount: 0,
-      dislikeCount: 0,
+      likesCount: 0,
+      dislikesCount: 0,
     };
 
     const comment = this.CommentModel.createInstance(newComment);

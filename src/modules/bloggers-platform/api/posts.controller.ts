@@ -27,6 +27,15 @@ import { UserContextDto } from 'src/modules/user-accounts/guards/dto/user-contex
 import { JwtAuthGuard } from 'src/modules/user-accounts/guards/bearer/jwt-auth.guard';
 import { CommentsQueryRepository } from '../infrastructure/query/comments-query.repository';
 import { LikeInputDto } from '../dto/like/like-input.dto';
+import { UpdatePostLikeStatusCommand } from '../application/usecases/posts/update-post-like-status.usecase';
+import { JwtOptionalAuthGuard } from 'src/modules/user-accounts/guards/bearer/jwt-optional-auth.guard';
+import { GetPostCommand } from '../application/usecases/posts/get-post.usecase';
+import { BasicAuthGuard } from 'src/modules/user-accounts/guards/basic/basi-auth.guard';
+import { CreatePostCommand } from '../application/usecases/posts/create-post.usecase';
+import { ExtractUserIfExistsFromRequest } from 'src/modules/user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator';
+import { LikesQueryRepository } from '../infrastructure/query/likes-query.repository';
+import { Types } from 'mongoose';
+import { postItemsGetsMyStatus } from '../application/mapers/post-items-gets-my-status';
 
 @Controller('posts')
 export class PostsController {
@@ -34,30 +43,50 @@ export class PostsController {
     private postsService: PostsService,
     private postsQueryRepository: PostsQueryRepository,
     private commentsQueryRepository: CommentsQueryRepository,
+    private likesQueryRepository: LikesQueryRepository,
     private commandBus: CommandBus,
   ) {}
 
   @Post()
+  @UseGuards(BasicAuthGuard)
   async create(@Body() dto: PostInputDto): Promise<PostViewDto> {
-    const postId = await this.postsService.createPost(dto);
-
-    return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
+    const postId = await this.commandBus.execute(new CreatePostCommand(dto));
+    return await this.postsQueryRepository.findByIdOrNotFoundFail(postId);
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string): Promise<PostViewDto> {
-    return this.postsQueryRepository.findByIdOrNotFoundFail(id);
+  @UseGuards(JwtOptionalAuthGuard)
+  async getById(
+    @Param('id') id: string,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto,
+  ): Promise<PostViewDto> {
+    return await this.commandBus.execute(new GetPostCommand(id, user?.id));
   }
 
   @Get()
+  @UseGuards(JwtOptionalAuthGuard)
   async getAll(
     @Query() query: GetPostsQueryParams,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    const blogs = await this.postsQueryRepository.getAll(query);
-    return blogs;
+    const posts = await this.postsQueryRepository.getAll(query);
+
+    if (user.id) {
+      const postIds = posts.items.map((post) => new Types.ObjectId(post.id));
+      const likes = await this.likesQueryRepository.getLikesByParentsIds(
+        postIds,
+        user.id,
+      );
+
+      const updatedItems = postItemsGetsMyStatus(posts.items, likes);
+      posts.items = updatedItems;
+    }
+
+    return posts;
   }
 
   @Put(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async updatePost(
     @Param('id') id: string,
@@ -67,14 +96,15 @@ export class PostsController {
   }
 
   @Delete(':id')
+  @UseGuards(BasicAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deletePost(@Param('id') id: string): Promise<void> {
     return this.postsService.deletePost(id);
   }
   //
 
-  @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
+  @UseGuards(JwtAuthGuard)
   async createCommentForCurrentPost(
     @Param('id') id: string,
     @Body() body: CommentInputDto,
@@ -87,16 +117,16 @@ export class PostsController {
     return this.commentsQueryRepository.findByIdOrNotFoundFail(commentId);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Put(':id/like-status')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async updateLikeStatusForCurrentPost(
     @Param('id') id: string,
     @Body() body: LikeInputDto,
     @ExtractUserFromRequest() user: UserContextDto,
   ): Promise<void> {
-    // const commentId = await this.commandBus.execute(
-    //   new CreateCommentCommand(body, id, user.id),
-    // );
-    // return this.commentsQueryRepository.findByIdOrNotFoundFail(commentId);
+    await this.commandBus.execute(
+      new UpdatePostLikeStatusCommand(body, id, user.id),
+    );
   }
 }

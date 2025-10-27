@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { Like } from '../../domain/like/like.entity';
+import { LikeForArrayViewDto } from '../like/like-for-array-view.dto';
 
 export class CreatePostDomainDto {
   title: string;
@@ -10,5 +10,5 @@ export class CreatePostDomainDto {
   //
   likesCount: number;
   dislikesCount: number;
-  newestLikes: Like[];
+  newestLikes: LikeForArrayViewDto[];
 }

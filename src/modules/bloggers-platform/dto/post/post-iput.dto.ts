@@ -1,22 +1,27 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { Trim } from 'src/core/decorators/transform/trim';
 
 export class PostInputDto {
   @IsString()
+  @Trim()
   @IsNotEmpty()
-  @Length(1, 30)
+  @MaxLength(30)
   title: string;
 
   @IsString()
+  @Trim()
   @IsNotEmpty()
-  @Length(1, 100)
+  @MaxLength(100)
   shortDescription: string;
 
   @IsString()
+  @Trim()
   @IsNotEmpty()
-  @Length(1, 1000)
+  @MaxLength(1000)
   content: string;
 
   @IsString()
+  @Trim()
   @IsNotEmpty()
   blogId: string;
 }

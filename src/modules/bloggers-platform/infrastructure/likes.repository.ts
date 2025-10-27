@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Blog, BlogDocument } from '../domain/blog/blog.entity';
+import { Injectable } from '@nestjs/common';
+
 import { Like } from '../domain/like/like.entity';
 
 import { InjectModel } from '@nestjs/mongoose';
@@ -78,21 +78,33 @@ export class LikesRepository {
     const like = await this.LikeModel.findOne({
       parentId: new Types.ObjectId(parentId),
       authorId: new Types.ObjectId(authorId),
-      parentModel: 'Comment',
+      // parentModel: 'Comment',
     });
 
     return like;
   }
 
-  // async findById(id: string): Promise<BlogDocument | null> {
-  //   return this.BlogModel.findById(id);
-  // }
+  async findByPostIdByAuthorId(
+    parentId: string,
+    authorId: string,
+  ): Promise<LikeDocument | null> {
+    const like = await this.LikeModel.findOne({
+      parentId: new Types.ObjectId(parentId),
+      authorId: new Types.ObjectId(authorId),
+      // parentModel: 'Post',
+    });
 
-  // async delete(id: string): Promise<void> {
-  //   const result = await this.BlogModel.findByIdAndDelete(id);
+    return like;
+  }
 
-  //   if (!result) {
-  //     throw new NotFoundException(`Blog with id ${id} not found`);
-  //   }
-  // }
+  async getLatestLikes(parentId: string): Promise<LikeDocument[]> {
+    const latestLikes = await this.LikeModel.find({
+      parentId: new Types.ObjectId(parentId),
+      status: 'Like',
+    })
+      .sort({ createdAt: -1 }) // сортировка по времени — от новых к старым
+      .limit(3);
+
+    return latestLikes;
+  }
 }

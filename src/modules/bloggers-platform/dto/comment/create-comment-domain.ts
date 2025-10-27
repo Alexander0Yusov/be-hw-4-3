@@ -5,6 +5,6 @@ export class CreateCommentDomainDto {
   userId: Types.ObjectId;
   userLogin: string;
   postId: Types.ObjectId;
-  likeCount: number;
-  dislikeCount: number;
+  likesCount: number;
+  dislikesCount: number;
 }

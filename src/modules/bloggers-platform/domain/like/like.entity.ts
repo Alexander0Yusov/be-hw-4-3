@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model, Types } from 'mongoose';
+import { LikeForArrayViewDto } from '../../dto/like/like-for-array-view.dto';
 
 export enum LikeStatus {
   Like = 'Like',
@@ -28,7 +29,7 @@ export class Like {
   createdAt: Date;
   updatedAt: Date;
 
-  static mapToView(like: Like) {
+  static mapToView(like: LikeDocument): LikeForArrayViewDto {
     return {
       addedAt: like.createdAt.toISOString(),
       userId: like.authorId.toString(),

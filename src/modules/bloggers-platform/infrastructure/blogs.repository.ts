@@ -9,7 +9,7 @@ export class BlogsRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) {}
 
   async findOrNotFoundFail(id: string): Promise<BlogDocument> {
-    const blog = await this.findById(id);
+    const blog = await this.BlogModel.findById(id);
 
     if (!blog) {
       //TODO: replace with domain exception

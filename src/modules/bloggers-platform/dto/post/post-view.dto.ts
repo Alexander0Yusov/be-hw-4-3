@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import { Like, LikeStatus } from '../../domain/like/like.entity';
-import { Post } from '../../domain/post/post.entity';
+import { Post, PostDocument } from '../../domain/post/post.entity';
 
 export class PostViewDto {
   id: string;
@@ -22,9 +22,9 @@ export class PostViewDto {
     }[];
   };
 
-  static mapToView(data: Post, _id: Types.ObjectId) {
+  static mapToView(data: PostDocument): PostViewDto {
     return {
-      id: _id.toString(),
+      id: data.id,
       title: data.title,
       shortDescription: data.shortDescription,
       content: data.content,
@@ -35,7 +35,7 @@ export class PostViewDto {
         likesCount: data.likesCount,
         dislikesCount: data.dislikesCount,
         myStatus: LikeStatus.None,
-        newestLikes: data.newestLikes.map(Like.mapToView),
+        newestLikes: data.newestLikes,
       },
     };
   }

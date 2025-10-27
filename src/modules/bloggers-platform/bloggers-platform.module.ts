@@ -23,6 +23,10 @@ import { UpdateCommentLikeStatusUseCase } from './application/usecases/comments/
 import { GetCommentUseCase } from './application/usecases/comments/get-comment.usecase';
 import { DeleteCommentUseCase } from './application/usecases/comments/delete-comment.usecase';
 import { LikesRepository } from './infrastructure/likes.repository';
+import { UpdatepostLikeStatusUseCase } from './application/usecases/posts/update-post-like-status.usecase';
+import { GetPostUseCase } from './application/usecases/posts/get-post.usecase';
+import { CreatePostUseCase } from './application/usecases/posts/create-post.usecase';
+import { LikesQueryRepository } from './infrastructure/query/likes-query.repository';
 
 export const CommandHandlers = [
   CreateCommentUseCase,
@@ -30,6 +34,9 @@ export const CommandHandlers = [
   UpdateCommentLikeStatusUseCase,
   GetCommentUseCase,
   DeleteCommentUseCase,
+  UpdatepostLikeStatusUseCase,
+  GetPostUseCase,
+  CreatePostUseCase,
 ];
 
 @Module({
@@ -57,6 +64,7 @@ export const CommandHandlers = [
     CommentsService,
     //
     LikesRepository,
+    LikesQueryRepository,
 
     ...CommandHandlers,
   ],

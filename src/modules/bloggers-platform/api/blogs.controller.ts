@@ -18,12 +18,18 @@ import { BlogsQueryRepository } from '../infrastructure/query/blogs-query.reposi
 import { GetBlogsQueryParams } from '../dto/blog/get-blogs-query-params.input-dto';
 import { PaginatedViewDto } from '../../../../src/core/dto/base.paginated.view-dto';
 import { BlogUpdateDto } from '../dto/blog/blog-update.dto';
-import { PostInputDto } from '../dto/post/post-iput.dto';
 import { PostViewDto } from '../dto/post/post-view.dto';
 import { PostsService } from '../application/posts.service';
 import { PostsQueryRepository } from '../infrastructure/query/posts-query.repository';
 import { GetPostsQueryParams } from '../dto/post/get-posts-query-params.input-dto';
 import { BasicAuthGuard } from 'src/modules/user-accounts/guards/basic/basi-auth.guard';
+import { JwtOptionalAuthGuard } from 'src/modules/user-accounts/guards/bearer/jwt-optional-auth.guard';
+import { ExtractUserIfExistsFromRequest } from 'src/modules/user-accounts/guards/decorators/param/extract-user-if-exists-from-request.decorator';
+import { UserContextDto } from 'src/modules/user-accounts/guards/dto/user-context.dto';
+import { Types } from 'mongoose';
+import { LikesQueryRepository } from '../infrastructure/query/likes-query.repository';
+import { postItemsGetsMyStatus } from '../application/mapers/post-items-gets-my-status';
+import { PostUpdateOnBlogRouteDto } from '../dto/post/post-update-on-blog-route.dto';
 
 @Controller('blogs')
 export class BlogsController {
@@ -32,6 +38,7 @@ export class BlogsController {
     private blogsQueryRepository: BlogsQueryRepository,
     private postsService: PostsService,
     private postsQueryRepository: PostsQueryRepository,
+    private likesQueryRepository: LikesQueryRepository,
   ) {}
 
   @Post()
@@ -77,20 +84,36 @@ export class BlogsController {
 
   // маршрут: POST /blogs/:id/posts
   @Post(':id/posts')
+  @UseGuards(BasicAuthGuard)
   async createPostForBlog(
     @Param('id') id: string,
-    @Body() dto: Omit<PostInputDto, 'blogId'>,
+    @Body() dto: PostUpdateOnBlogRouteDto,
   ): Promise<PostViewDto> {
-    const postId = await this.postsService.createPost({ blogId: id, ...dto });
+    const postId = await this.postsService.createPost({ ...dto, blogId: id });
     return this.postsQueryRepository.findByIdOrNotFoundFail(postId);
   }
 
   // маршрут: GET /blogs/:id/posts
   @Get(':id/posts')
+  @UseGuards(JwtOptionalAuthGuard)
   async getPostsForBlog(
     @Param('id') id: string,
     @Query() query: GetPostsQueryParams,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto,
   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-    return this.postsQueryRepository.getAll(query, id);
+    const posts = await this.postsQueryRepository.getAll(query, id);
+
+    if (user.id) {
+      const postIds = posts.items.map((post) => new Types.ObjectId(post.id));
+      const likes = await this.likesQueryRepository.getLikesByParentsIds(
+        postIds,
+        user.id,
+      );
+
+      const updatedItems = postItemsGetsMyStatus(posts.items, likes);
+      posts.items = updatedItems;
+    }
+
+    return posts;
   }
 }

@@ -1,12 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model, Types } from 'mongoose';
 import { CreatePostDomainDto } from '../../dto/post/create-post-domain.dto';
-import { Like, LikeSchema } from '../like/like.entity';
+import { Like, LikeDocument, LikeSchema } from '../like/like.entity';
 import { PostUpdateDto } from '../../dto/post/post-update.dto';
+import { LikeForArrayViewDto } from '../../dto/like/like-for-array-view.dto';
 
 @Schema({ timestamps: true })
 export class Post {
-  @Prop({ type: String, required: true, max: 1000 })
+  @Prop({ type: String, required: true })
   title: string;
 
   @Prop({ type: String, required: true })
@@ -27,8 +28,8 @@ export class Post {
   @Prop({ type: Number, required: true })
   dislikesCount: number;
 
-  @Prop({ type: [LikeSchema], default: [] })
-  newestLikes: Like[];
+  @Prop({ type: [Object], default: [] })
+  newestLikes: LikeForArrayViewDto[];
 
   createdAt: Date;
   updatedAt: Date;
@@ -59,6 +60,16 @@ export class Post {
     this.content = dto.content;
     this.blogId = new Types.ObjectId(dto.blogId);
     this.blogName = blogName;
+  }
+
+  updateLikesCountersAndLastLikesList(
+    likes: number,
+    disLikes: number,
+    newestLikes: LikeForArrayViewDto[],
+  ) {
+    this.likesCount = likes;
+    this.dislikesCount = disLikes;
+    this.newestLikes = newestLikes;
   }
 
   // makeDeleted() {

@@ -32,8 +32,8 @@ export class Comment {
     comment.commentatorInfo.userLogin = dto.userLogin;
 
     comment.postId = dto.postId;
-    comment.likeCount = dto.likeCount;
-    comment.dislikeCount = dto.dislikeCount;
+    comment.likeCount = dto.likesCount;
+    comment.dislikeCount = dto.dislikesCount;
 
     return comment as CommentDocument;
   }

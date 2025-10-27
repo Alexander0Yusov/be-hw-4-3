@@ -76,5 +76,24 @@ describe('comments (e2e)', () => {
       .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
       .send({ content: 'a'.repeat(25) })
       .expect(HttpStatus.CREATED);
+
+    // отправка лайка
+    await request(app.getHttpServer())
+      .put(
+        `/${GLOBAL_PREFIX}` + `/posts/${createdPost.body.id}` + '/like-status',
+      )
+      .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+      .send({ likeStatus: 'Like' })
+      .expect(HttpStatus.NO_CONTENT);
+
+    // запрос поста со своим лайком
+    const myPost = await request(app.getHttpServer())
+      .get(`/${GLOBAL_PREFIX}` + `/posts/${createdPost.body.id}`)
+      .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+      .expect(HttpStatus.OK);
+
+    console.log(22222, myPost.body);
+
+    expect(HttpStatus.OK);
   });
 });

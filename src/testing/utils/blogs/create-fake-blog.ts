@@ -3,7 +3,7 @@ import { BlogInputDto } from 'src/modules/bloggers-platform/dto/blog/blog-input.
 const testBlogData: BlogInputDto = {
   name: 'blog 1',
   description: 'desc blog 1',
-  websiteUrl: 'https://www.youtube.com/watch?v=DqM',
+  websiteUrl: 'https://www.youtube.com',
 };
 
 export const createFakeBlog = (blog?: BlogInputDto) => {
