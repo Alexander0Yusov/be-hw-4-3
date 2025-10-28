@@ -10,7 +10,7 @@ export class CommentViewDto {
   id: string;
   content: string;
   commentatorInfo: CommentatorInfo;
-  createdAt: Date;
+  createdAt: string;
   likesInfo: {
     likesCount: number;
     dislikesCount: number;
@@ -28,7 +28,7 @@ export class CommentViewDto {
         userId: comment.commentatorInfo.userId!.toString(),
         userLogin: comment.commentatorInfo.userLogin!.toString(),
       },
-      createdAt: comment.createdAt,
+      createdAt: comment.createdAt.toISOString(),
       likesInfo: {
         likesCount: comment.likeCount,
         dislikesCount: comment.dislikeCount,

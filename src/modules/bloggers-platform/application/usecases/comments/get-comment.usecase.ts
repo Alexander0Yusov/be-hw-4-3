@@ -1,14 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { LikeStatus } from 'src/modules/bloggers-platform/domain/like/like.entity';
 import { CommentViewDto } from 'src/modules/bloggers-platform/dto/comment/comment-view.dto';
 import { CommentsRepository } from 'src/modules/bloggers-platform/infrastructure/comments.repository';
 import { LikesRepository } from 'src/modules/bloggers-platform/infrastructure/likes.repository';
-import { CommentsQueryRepository } from 'src/modules/bloggers-platform/infrastructure/query/comments-query.repository';
 
 export class GetCommentCommand {
   constructor(
     public commentId: string,
-    public userId: string = '',
+    public userId?: string,
   ) {}
 }
 
@@ -23,7 +21,7 @@ export class GetCommentUseCase
 
   async execute({
     commentId,
-    userId = '',
+    userId,
   }: GetCommentCommand): Promise<CommentViewDto> {
     // делаем квери запрос на комментарий и лайк. затем лепим вью обьект
     const comment =
@@ -40,6 +38,10 @@ export class GetCommentUseCase
       }
     }
 
-    return CommentViewDto.mapToView(comment);
+    const ff = CommentViewDto.mapToView(comment);
+
+    console.log(777777, '------', ff);
+
+    return ff;
   }
 }

@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  Like,
-  LikeDocument,
-  type LikeModelType,
-} from '../../domain/like/like.entity';
+import { Like, type LikeModelType } from '../../domain/like/like.entity';
 import { Types } from 'mongoose';
 
 @Injectable()

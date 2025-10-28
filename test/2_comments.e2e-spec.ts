@@ -77,7 +77,26 @@ describe('comments (e2e)', () => {
       .send({ content: 'a'.repeat(25) })
       .expect(HttpStatus.CREATED);
 
-    // отправка лайка
+    // отправка лайка на коммент
+    await request(app.getHttpServer())
+      .put(
+        `/${GLOBAL_PREFIX}` +
+          `/comments/${createdComment.body.id}` +
+          '/like-status',
+      )
+      .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+      .send({ likeStatus: 'Like' })
+      .expect(HttpStatus.NO_CONTENT);
+
+    // запрос коммента со своим лайком
+    const myComment = await request(app.getHttpServer())
+      .get(`/${GLOBAL_PREFIX}` + `/comments/${createdComment.body.id}`)
+      .set('Authorization', `Bearer ${loginResponse.body.accessToken}`)
+      .expect(HttpStatus.OK);
+
+    console.log(6666, myComment.body);
+
+    // отправка лайка на пост
     await request(app.getHttpServer())
       .put(
         `/${GLOBAL_PREFIX}` + `/posts/${createdPost.body.id}` + '/like-status',

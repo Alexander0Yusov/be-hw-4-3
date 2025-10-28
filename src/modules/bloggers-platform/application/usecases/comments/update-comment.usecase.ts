@@ -1,4 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { CommentUpdateDto } from 'src/modules/bloggers-platform/dto/comment/comment-update.dto';
 import { CommentsRepository } from 'src/modules/bloggers-platform/infrastructure/comments.repository';
 
@@ -28,7 +30,10 @@ export class UpdateCommentUseCase
       comment.updateContent(dto.content);
       this.commentsRepository.save(comment);
     } else {
-      // error
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        message: 'Comment was created by another user',
+      });
     }
   }
 }

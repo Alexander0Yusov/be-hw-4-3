@@ -36,6 +36,8 @@ import { ExtractUserIfExistsFromRequest } from 'src/modules/user-accounts/guards
 import { LikesQueryRepository } from '../infrastructure/query/likes-query.repository';
 import { Types } from 'mongoose';
 import { postItemsGetsMyStatus } from '../application/mapers/post-items-gets-my-status';
+import { GetCommentsQueryParams } from '../dto/comment/get-comments-query-params.input-dto';
+import { commentItemsGetsMyStatus } from '../application/mapers/comment-items-gets-my-status';
 
 @Controller('posts')
 export class PostsController {
@@ -114,7 +116,7 @@ export class PostsController {
       new CreateCommentCommand(body, id, user.id),
     );
 
-    return this.commentsQueryRepository.findByIdOrNotFoundFail(commentId);
+    return await this.commentsQueryRepository.findByIdOrNotFoundFail(commentId);
   }
 
   @Put(':id/like-status')
@@ -128,5 +130,39 @@ export class PostsController {
     await this.commandBus.execute(
       new UpdatePostLikeStatusCommand(body, id, user.id),
     );
+  }
+
+  @Get(':id/comments')
+  @UseGuards(JwtOptionalAuthGuard)
+  async getCommentsByPostId(
+    @Param('id') id: string,
+    @Query() query: GetCommentsQueryParams,
+    @ExtractUserIfExistsFromRequest() user: UserContextDto,
+  ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    await this.postsQueryRepository.findByIdOrNotFoundFail(id);
+
+    console.log(6666, '---', query, '----', user);
+
+    const comments = await this.commentsQueryRepository.findManyByPostId(
+      id,
+      query,
+    );
+
+    console.log(666666, comments);
+
+    if (user.id) {
+      const commentIds = comments.items.map(
+        (comment) => new Types.ObjectId(comment.id),
+      );
+      const likes = await this.likesQueryRepository.getLikesByParentsIds(
+        commentIds,
+        user.id,
+      );
+
+      const updatedItems = commentItemsGetsMyStatus(comments.items, likes);
+      comments.items = updatedItems;
+    }
+
+    return comments;
   }
 }

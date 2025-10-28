@@ -15,6 +15,7 @@ import {
   type CommentModelType,
 } from '../../domain/comment/comment.entity';
 import { CommentViewDto } from '../../dto/comment/comment-view.dto';
+import { GetCommentsQueryParams } from '../../dto/comment/get-comments-query-params.input-dto';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -26,7 +27,7 @@ export class CommentsQueryRepository {
 
   async findByIdOrNotFoundFail(
     parentId: string,
-    authorId: string = '',
+    authorId?: string,
   ): Promise<CommentViewDto> {
     const comment = await this.CommentModel.findById(parentId);
 
@@ -36,46 +37,41 @@ export class CommentsQueryRepository {
 
     const filter: Record<string, any> = {
       parentId: new Types.ObjectId(parentId),
-      parentModel: 'Comment',
+      // parentModel: 'Comment',
     };
+
+    let myLike;
 
     if (authorId) {
       filter.authorId = new Types.ObjectId(authorId);
+      myLike = await this.LikeModel.findOne(filter).lean();
     }
-
-    const myLike = await this.LikeModel.findOne(filter).lean();
 
     return CommentViewDto.mapToView(comment, myLike?.status);
   }
 
-  //   async getAll(
-  //     query: GetPostsQueryParams,
-  //     blogId?: string,
-  //   ): Promise<PaginatedViewDto<PostViewDto[]>> {
-  //     let filter = {};
+  async findManyByPostId(
+    id: string,
+    queryDto: GetCommentsQueryParams,
+  ): Promise<PaginatedViewDto<CommentViewDto[]>> {
+    const { pageNumber, pageSize, sortBy, sortDirection } = queryDto;
+    const skip = (pageNumber - 1) * pageSize;
+    const filter = { postId: new Types.ObjectId(id) };
 
-  //     if (blogId) {
-  //       const blog = await this.BlogModel.findById(blogId);
-  //       if (!blog) {
-  //         throw new NotFoundException('blog not found');
-  //       }
-  //       filter = { blogId: new Types.ObjectId(blogId) };
-  //     }
+    const totalCount = await this.CommentModel.countDocuments(filter);
 
-  //     const posts = await this.PostModel.find(filter)
-  //       .sort({ [query.sortBy]: query.sortDirection })
-  //       .skip(query.calculateSkip())
-  //       .limit(query.pageSize);
+    const comments = await this.CommentModel.find(filter)
+      .sort({ [sortBy]: sortDirection })
+      .skip(skip)
+      .limit(pageSize);
 
-  //     const totalCount = await this.PostModel.countDocuments(filter);
+    const items = comments.map((comment) => CommentViewDto.mapToView(comment));
 
-  //     const items = posts.map((post) => PostViewDto.mapToView(post, post._id));
-
-  //     return PaginatedViewDto.mapToView({
-  //       items,
-  //       totalCount,
-  //       page: query.pageNumber,
-  //       size: query.pageSize,
-  //     });
-  //   }
+    return PaginatedViewDto.mapToView({
+      items,
+      totalCount,
+      page: queryDto.pageNumber,
+      size: queryDto.pageSize,
+    });
+  }
 }

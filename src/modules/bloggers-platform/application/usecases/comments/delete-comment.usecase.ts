@@ -1,4 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { DomainExceptionCode } from 'src/core/exceptions/domain-exception-codes';
+import { DomainException } from 'src/core/exceptions/domain-exceptions';
 import { CommentsRepository } from 'src/modules/bloggers-platform/infrastructure/comments.repository';
 import { LikesRepository } from 'src/modules/bloggers-platform/infrastructure/likes.repository';
 import { CommentsQueryRepository } from 'src/modules/bloggers-platform/infrastructure/query/comments-query.repository';
@@ -30,6 +32,11 @@ export class DeleteCommentUseCase
       await this.commentsRepository.findByIdAndDelete(commentId);
       // делаем удаление лайков к этому комментарию
       await this.likesRepository.deleteManyByParentId(commentId);
+    } else {
+      throw new DomainException({
+        code: DomainExceptionCode.Forbidden,
+        message: 'Comment was created by another user',
+      });
     }
   }
 }

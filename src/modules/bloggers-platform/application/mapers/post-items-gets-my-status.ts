@@ -5,8 +5,6 @@ export const postItemsGetsMyStatus = (
   posts: PostViewDto[],
   likes: Like[],
 ): PostViewDto[] => {
-  console.log(2222, posts);
-
   const updatedPosts = posts.map((post) => {
     const currentLike = likes.find(
       (like) => like.parentId.toString() === post.id,
@@ -18,8 +16,6 @@ export const postItemsGetsMyStatus = (
 
     return post;
   });
-
-  console.log(3333, updatedPosts);
 
   return updatedPosts;
 };
